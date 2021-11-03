@@ -1,5 +1,7 @@
+from django.core import validators
+from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models.base import Model
+from django.db.models.aggregates import Min
 
 
 class Promotion(models.Model):
@@ -14,16 +16,32 @@ class Collection(models.Model):
         'Product', on_delete=models.SET_NULL, null=True, related_name='+')
     # related_name='+' means do not create reverse relationship to Product
 
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        ordering = ['title']
+
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField()
-    description = models.TextField()
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField(null=True, blank=True)
+    unit_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(1)]
+    )
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(Promotion)
+    promotions = models.ManyToManyField(Promotion, blank=True)
+
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        ordering = ['title']
 
 
 class Customer(models.Model):
@@ -45,6 +63,12 @@ class Customer(models.Model):
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
 
+    def __str__(self) -> str:
+        return f'{self.first_name} {self.last_name}'
+
+    class Meta:
+        ordering = ['first_name', 'last_name']
+
 
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
@@ -64,6 +88,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    # orderitem_set
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveSmallIntegerField()
