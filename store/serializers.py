@@ -15,7 +15,8 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'products_count']
 
     # define this field separately because this info is not available to serializer
-    products_count = serializers.IntegerField()
+    # marking as read_only because it is only going as response with data not allowed to write using POST
+    products_count = serializers.IntegerField(read_only=True)
 
 
 ''' using Serializer
