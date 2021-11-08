@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'store_custom',
 
     'rest_framework',
+    'django_filters',
     'debug_toolbar',
 ]
 
